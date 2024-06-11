@@ -41,22 +41,15 @@ switch ($operation) {
     case 'delete':
         deleteFromDatabase($conn, $table);
         break;
-        case 'login_as_patient':
-            loginAsPatient($connection);
-            header("Location: /basididati/Prog/index.php");
-            break;
-        // case 'login_as_worker':
-        //     loginAsWorker($connection);
-        //     header("Location: /basididati/Prog/index.php");
-        //     break;
-        // case 'logout':
-        //     unset($_SESSION['logged_user']);
-        //     header("Location:  /basididati/Prog/login.php");
-        //     break;
-        // case 'view_table_by_select':
-        //     $_SESSION['table'] = strtolower($_POST['Tabella']);
-        //     header("Location: /basididati/Prog/php/view.php?table={$table}");
-        //     break;
+    case 'login-patient':
+        break;
+    case 'login-worker':
+        break;
+    case 'logout':
+        break;
+    case 'select-table':
+        break;
+
 }
 
 
@@ -151,55 +144,37 @@ function updateIntoDatabase($conn, $table, $values)
 
 
 
-function parsePostValues()
-{
+function parsePostValues() {
     unset($_POST['operation']);
     unset($_POST['table']);
 
     $attributes = array();
 
+   
     foreach ($_POST as $k => $v) {
+       
         $ks = explode(",_", $k);
+        
+        
         if (count($ks) > 1) {
-            $vs = array_values(explode(",", $v));
+            $vs = explode(",", $v);
         } else {
-            $vs = array_values(array($v));
+            $vs = array($v);
         }
-        $i = 0;
-        foreach ($ks as $key) {
-            $value = $vs[$i++];
-            if (stristr($key, "plaintext")) {
+
+        
+        foreach ($ks as $index => $key) {
+            $value = $vs[$index];
+
+            if (stripos($key, "plaintext") !== false) {
                 $key = str_ireplace("plaintext", "Hashed", $key);
                 $value = password_hash($value, PASSWORD_DEFAULT);
             }
             $attributes[$key] = $value;
         }
     }
-
-
     return $attributes;
 }
 
 
-function loginAsPatient($connection)
-{
 
-    global $DEFAULT_DIR;
-
-    $query = "SELECT * FROM UtenzaPaziente WHERE paziente = $1;";
-    try {
-        $result = pg_fetch_array(pg_query_params($connection, $query, array($_POST['Username'])));
-        if (password_verify($_POST['Password'], $result['hashedpassword'])) {
-            $_SESSION['logged_user'] = array('username' => $_POST['Username'], 'type' => 'patient');
-            header("Location:/basididati/Prog/php/view.php");
-        } else {
-            $_SESSION['error_message'] = "Credenziali non valide";
-            header("Location:/basididati/Prog/login.php");
-            exit();
-        }
-    } catch (Exception $e) {
-        $_SESSION['error_message'] = $e -> getMessage();
-        header("Location:/basididati/Prog/login.php");
-        exit();
-    }
-}

@@ -58,7 +58,7 @@ if (isset($_SESSION['error_message'])) {
                         </h3>
                     <div class="mt-3">
                         <form action="opmanager.php" method="POST" class="styled-form">
-                            <input type="hidden" name="operation" value="login_as_worker">
+                            <input type="hidden" name="operation" value="login-worker">
                             <?php
                             include("php/utility.php");
                             echo inputText("Username", true, true, NULL);
@@ -86,7 +86,7 @@ if (isset($_SESSION['error_message'])) {
                       
                         <div class="mt-3">
                             <form action="opmanager.php" method="POST" class="styled-form">
-                                <input type="hidden" name="operation" value="login_as_patient">
+                                <input type="hidden" name="operation" value="login-patient">
                                 <?php
 
                                 echo inputText("Username", true, true, NULL);
