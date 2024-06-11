@@ -74,6 +74,11 @@ function buildInputField($connection, $column_data, $editable = true, $value = N
 {
     $name = ucfirst($column_data['column_name']);
     $field_type = $column_data['udt_name'];
+
+    if (stristr($name, "hashed")) {
+        $name = str_ireplace("hashed", "Plaintext", $name);
+        return inputPassword($name, $column_data['is_nullable'] == 'NO', $editable, $value);
+    }
     switch ($field_type) {
         case 'bpchar':
             return inputText($name, $column_data['is_nullable'] == 'NO', $editable, $value);
@@ -95,7 +100,7 @@ function buildInputField($connection, $column_data, $editable = true, $value = N
             try {
                 $result = pg_query($connection, $query);
             } catch (Exception $e) {
-                error_log("Errore nella lettura dal Database: " . "{$e}");
+                $_SESSION['error_message'] = $e->getMessage();
                 header("Refresh:0");
             }
             $enumValues = substr(pg_fetch_array($result)['enum_range'], 1, -1); //Trim { and }
@@ -269,25 +274,18 @@ function getPrimaryKeys($connection, $tableName)
 {
     $query = <<<QRY
     SELECT column_name
-    FROM information_schema.table_constraints TC 
-    JOIN information_schema.key_column_usage KCU ON TC.constraint_name = KCU.constraint_name
-    WHERE TC.table_name = $1 AND TC.constraint_type = 'PRIMARY KEY';
+    FROM information_schema.table_constraints TC JOIN information_schema.key_column_usage KCU
+    ON TC.constraint_name = KCU.constraint_name
+    WHERE TC.table_name = $1 AND constraint_type = 'PRIMARY KEY';
     QRY;
-
-    $result = pg_query_params($connection, $query, array($tableName));
-
-
-    if (!$result) {
+    try {
+        $results = pg_query_params($connection, $query, array($tableName));
+        $pkeys = array_map(fn ($el) => $el['column_name'], pg_fetch_all($results));
+    } catch (Exception $e) {
         error_log("Errore nella lettura dal Database: " . pg_last_error($connection));
-        return [];
+        header("Refresh:0");
     }
-
-
-    $rows = pg_fetch_all($result);
-
-    $primaryKeys = $rows ? array_map(fn ($el) => $el['column_name'], $rows) : [];
-
-    return $primaryKeys;
+    return $pkeys;
 }
 
 function getForeignKeyConstraints($connection, $tableName)

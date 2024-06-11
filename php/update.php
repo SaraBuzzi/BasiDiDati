@@ -2,7 +2,13 @@
 session_start();
 $table = $_SESSION['table'];
 
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    echo "<script type='text/javascript'>alert('$error_message');</script>";
+    unset($_SESSION['error_message']); 
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -88,10 +94,6 @@ function showEditForm()
 
     $columns = getColumnsInfo($conn, $table);
 
-   
-   
-
-    $foreignKeys = getForeignKeyConstraints($conn, $table);
     $primaryKeys = getPrimaryKeys($conn, $table);
 
     $valuesForFields = $_SESSION['edit_data'];
@@ -99,7 +101,7 @@ function showEditForm()
 
     ksort($form);
 
-    return implode('', $form);
+    echo implode('', $form);
 }
 
 

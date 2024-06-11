@@ -1,6 +1,4 @@
 
-
-
 -- Una Stanza che ospita un Laboratorio Interno non può avere un valore per l’attributo NumeroLetti, poiché non è adibita al Ricovero. !!
 CREATE OR REPLACE FUNCTION check_lab()
 RETURNS TRIGGER AS $$
@@ -15,7 +13,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER check_lab_trigger
-BEFORE INSERT ON Laboratorio
+BEFORE INSERT OR UPDATE ON LaboratorioInterno
 FOR EACH ROW
 EXECUTE FUNCTION check_lab();
 
@@ -34,7 +32,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER check_reparto_trigger
-BEFORE INSERT ON PersonaleAmministrativo
+BEFORE INSERT OR UPDATE ON PersonaleAmministrativo
 FOR EACH ROW
 EXECUTE FUNCTION check_reparto();
 
@@ -54,7 +52,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER check_reparto_primario_trigger
-BEFORE INSERT ON Primario
+BEFORE INSERT OR UPDATE ON Primario
 FOR EACH ROW
 EXECUTE FUNCTION check_reparto_primario();
 
@@ -74,7 +72,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER check_reparto_vice_primario_trigger
-BEFORE INSERT ON VicePrimario
+BEFORE INSERT OR UPDATE ON VicePrimario
 FOR EACH ROW
 EXECUTE FUNCTION check_reparto_vice_primario();
 
@@ -94,7 +92,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER check_primario_trigger
-BEFORE INSERT ON Primario
+BEFORE INSERT OR UPDATE ON Primario
 FOR EACH ROW
 EXECUTE FUNCTION check_primario();
 
@@ -103,15 +101,15 @@ CREATE OR REPLACE FUNCTION check_reparto_sostituzione()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Verifica se il Primario e il Vice Primario sono dello stesso reparto
-    IF (SELECT reparto FROM Primario WHERE CF = NEW.primario_CF) != (SELECT reparto FROM VicePrimario WHERE CF = NEW.viceprimario_CF) THEN
-        RAISE EXCEPTION 'Il Primario % e il Vice Primario % non sono dello stesso reparto', NEW.primario_CF, NEW.viceprimario_CF;
+    IF (SELECT reparto FROM Primario WHERE CF = NEW.primario) != (SELECT reparto FROM VicePrimario WHERE CF = NEW.viceprimario) THEN
+        RAISE EXCEPTION 'Il Primario % e il Vice Primario % non sono dello stesso reparto', NEW.primario, NEW.viceprimario;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER check_reparto_sostituzione_trigger
-BEFORE INSERT ON Sostituzione
+BEFORE INSERT OR UPDATE ON Sostituzione
 FOR EACH ROW
 EXECUTE FUNCTION check_reparto_sostituzione();
 
@@ -124,16 +122,16 @@ BEGIN
     IF EXISTS (SELECT 1 
                FROM TurnoPS
                WHERE personale = NEW.personale
-                 AND dataOraFine IS NULL 
-                 OR dataOraFine > NEW.dataOraInizio) THEN
-        RAISE EXCEPTION 'Il dipendente % è già in turno.', NEW.personale;
+                 AND (dataOraFine IS NULL 
+                 OR dataOraFine > NEW.dataOraInizio)) THEN
+        RAISE EXCEPTION 'Il dipendente % è già in turno il %', NEW.personale, NEW.dataOraInizio;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER check_turno_in_corso_trigger
-BEFORE INSERT ON TurnoPS
+BEFORE INSERT OR UPDATE ON TurnoPS
 FOR EACH ROW
 EXECUTE FUNCTION check_turno_in_corso();
 
@@ -153,7 +151,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER check_letti_trigger
-BEFORE INSERT ON Ricovero
+BEFORE INSERT OR UPDATE ON Ricovero
 FOR EACH ROW
 EXECUTE FUNCTION check_letti();
 
@@ -187,7 +185,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER check_letti_stanza_trigger
-BEFORE INSERT ON Ricovero
+BEFORE INSERT OR UPDATE ON Ricovero
 FOR EACH ROW
 EXECUTE FUNCTION check_letti_stanza();
 
@@ -200,8 +198,8 @@ BEGIN
     IF EXISTS (SELECT 1 
                FROM Ricovero
                WHERE paziente = NEW.paziente
-                 AND DataFine IS NULL 
-                 OR DataFine > NEW.DataInizio) THEN
+                 AND (DataFine IS NULL 
+                 OR DataFine > NEW.DataInizio)) THEN
         RAISE EXCEPTION 'Il paziente % è già ricoverato.', NEW.paziente;
     END IF;
     RETURN NEW;
@@ -209,7 +207,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER check_ricovero_in_corso_trigger
-BEFORE INSERT ON Ricovero
+BEFORE INSERT OR UPDATE ON Ricovero
 FOR EACH ROW
 EXECUTE FUNCTION check_ricovero_in_corso();
 
@@ -218,11 +216,11 @@ EXECUTE FUNCTION check_ricovero_in_corso();
 CREATE OR REPLACE FUNCTION check_medico_prescrittore()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Verifica se l'esame è uno specialismo
-    IF EXISTS (SELECT 1 FROM EsameSpecialistico WHERE codice = NEW.codice) THEN
+    -- Verifica se l'esame è uno specialistico
+    IF EXISTS (SELECT 1 FROM EsameSpecialistico WHERE codice = NEW.esame) THEN
         -- Verifica se è stato impostato un medico prescrittore
         IF NEW.Prescrittore IS NULL THEN
-            RAISE EXCEPTION 'Devi specificare un medico prescrittore per un esame specialistico.';
+            RAISE EXCEPTION 'Devi specificare un medico prescrittore per un esame specialistico. %', NEW.paziente;
         END IF;
     END IF;
     RETURN NEW;
@@ -230,9 +228,26 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
 CREATE TRIGGER check_medico_prescrittore_trigger
-BEFORE INSERT ON Prenotazione
+BEFORE INSERT OR UPDATE ON Prenotazione
 FOR EACH ROW
 EXECUTE FUNCTION check_medico_prescrittore();
 
+
+CREATE OR REPLACE FUNCTION check_and_delete_richiesta()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Delete from RichiestaPrenotazione where there's a match on Paziente and Esame
+    DELETE FROM RichiestaPrenotazione
+    WHERE Paziente = NEW.Paziente
+      AND Esame = NEW.Esame;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trigger_check_and_delete
+AFTER INSERT OR UPDATE ON Prenotazione
+FOR EACH ROW
+EXECUTE FUNCTION check_and_delete_richiesta();
