@@ -272,6 +272,7 @@ function getColumnsInfo($connection, $tableName)
 
 function getPrimaryKeys($connection, $tableName)
 {
+    $table = strtolower($tableName);
     $query = <<<QRY
     SELECT column_name
     FROM information_schema.table_constraints TC JOIN information_schema.key_column_usage KCU
@@ -279,7 +280,7 @@ function getPrimaryKeys($connection, $tableName)
     WHERE TC.table_name = $1 AND constraint_type = 'PRIMARY KEY';
     QRY;
     try {
-        $results = pg_query_params($connection, $query, array($tableName));
+        $results = pg_query_params($connection, $query, array($table));
         $pkeys = array_map(fn ($el) => $el['column_name'], pg_fetch_all($results));
     } catch (Exception $e) {
         error_log("Errore nella lettura dal Database: " . pg_last_error($connection));
@@ -320,16 +321,34 @@ function getForeignKeyConstraints($connection, $tableName)
 }
 
 
-function getAllTables($connection) {
-    $query = <<<QRY
-        SELECT table_name AS table
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-    QRY;
-    try {
-        return pg_fetch_all(pg_query($connection, $query));
-    } catch (Exception $e) {
-        error_log("Errore nella lettura dal Database: " . pg_last_error($connection));
-        header("Refresh:0");
+function getTables($conn) {
+    $query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'";
+    $result = pg_query($conn, $query);
+
+    if (!$result) {
+        throw new Exception(pg_last_error($conn));
     }
+
+    $tables = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $tables[] = $row['table_name'];
+    }
+
+    return $tables;
+}
+
+function getUsersTables($conn) {
+    $query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'";
+    $result = pg_query($conn, $query);
+
+    if (!$result) {
+        throw new Exception(pg_last_error($conn));
+    }
+
+    $tables = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $tables[] = $row['table_name'];
+    }
+
+    return $tables;
 }

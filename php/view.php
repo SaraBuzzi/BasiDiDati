@@ -1,17 +1,23 @@
 <?php
 session_start();
-$table = strtolower($_GET['table']);
+include 'utility.php';
 
-$_SESSION['table'] = $table;
+if (isset($_GET["table"])){
+  $table = strtolower($_GET['table']);
+$_SESSION['table'] = $table;  
+} else {
+    $table = strtolower($_SESSION['table']);
+}
+
 
 if (isset($_SESSION['error_message'])) {
     $error_message = $_SESSION['error_message'];
     echo "<script type='text/javascript'>alert('$error_message');</script>";
-    unset($_SESSION['error_message']); 
+    unset($_SESSION['error_message']);
 }
 ?>
 
-?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -39,7 +45,7 @@ if (isset($_SESSION['error_message'])) {
                         <img width="100" class="ms-4" src="../logo.png">
                         <h3 class="m-0 p-0 fw-bold">Gestore Aziende Ospedaliere</h3>
                     </div>
-                    <a class="btn btn-outline-light me-5" href="../index.php">
+                    <a class="btn btn-outline-light me-5" href="view.php">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
                             <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z" />
                         </svg>
@@ -53,16 +59,27 @@ if (isset($_SESSION['error_message'])) {
     </header>
 
     <section class="container-xl mx-auto my-5">
-        <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 ">
-            <div class='d-flex justify-content-between mb-5 align-items-center'>
-                <h3 class=' fw-bold text-capitalize'> <?php echo $table ?> </h3>
-                <a class='btn btn-outline-secondary me-4 fs-5' href="insert.php"> Inserisci <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='currentColor' class='bi bi-arrow-right-short' viewBox='0 0 16 16'>
-                        <path fill-rule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8' />
-                    </svg></a>
+        <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 loggato-worker">
+            <div class='d-flex justify-content-between align-items-center'>
+                 <?php showWorkerSelect();
+                 showUserSelect();?>
             </div>
-            <?php include 'utility.php';
-            showTable(connectToDatabase()); ?>
-        </div>
+        </div>  
+        </section>
+
+
+    <section class="container-xl mx-auto my-5">
+        
+            <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 ">
+                <div class='d-flex justify-content-between mb-5 align-items-center'>
+                    <h3 class=' fw-bold text-capitalize'> <?php echo $table ?> </h3>
+                    <a class='btn btn-outline-secondary me-4 fs-5' href="insert.php"> Inserisci <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='currentColor' class='bi bi-arrow-right-short' viewBox='0 0 16 16'>
+                            <path fill-rule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8' />
+                        </svg></a>
+                </div>
+                <?php 
+                showTable(connectToDatabase()); ?>
+            </div>
 
 
 
@@ -75,6 +92,7 @@ if (isset($_SESSION['error_message'])) {
 </html>
 
 <?php
+
 
 function showTable($conn)
 {
@@ -93,8 +111,38 @@ function showTable($conn)
         while ($row = pg_fetch_assoc($table_result)) {
             $table_data[] = $row;
         }
-        echo buildTable( array_keys($table_data[0]), $table_data);
+        echo buildTable(array_keys($table_data[0]), $table_data);
     }
+}
+
+function showWorkerSelect()
+{
+    $conn = connectToDatabase();
+    $string = "<select class='form-select' size='5'>";
+
+    $allTables = getTables($conn);
+
+    foreach($allTables as $table) {
+        $table = strtoupper($table);
+        $string .= "<option value='{$table}'> {$table}</option>";
+    }
+ 
+echo $string ."</select>";
+}
+
+function showUserSelect()
+{
+    $conn = connectToDatabase();
+    $string = "<select class='form-select' size='5'>";
+
+    $allTables = getTables($conn);
+
+    foreach($allTables as $table) {
+        $table = strtoupper($table);
+        $string .= "<option value='{$table}'> {$table}</option>";
+    }
+ 
+echo $string ."</select>";
 }
 
 

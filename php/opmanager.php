@@ -34,7 +34,6 @@ switch ($operation) {
         break;
     case 'update':
         $_SESSION['table'] = $table;
-        $attributes = array_filter($attributes, fn ($el) => $el);
         updateIntoDatabase($conn, $table, $attributes);
         unset($_SESSION['edit_data']);
         header("Location: /basididati/Prog/php/view.php?table={$table}");
@@ -42,10 +41,10 @@ switch ($operation) {
     case 'delete':
         deleteFromDatabase($conn, $table);
         break;
-        // case 'login_as_patient':
-        //     loginAsPatient($connection);
-        //     header("Location: /basididati/Prog/index.php");
-        //     break;
+        case 'login_as_patient':
+            loginAsPatient($connection);
+            header("Location: /basididati/Prog/index.php");
+            break;
         // case 'login_as_worker':
         //     loginAsWorker($connection);
         //     header("Location: /basididati/Prog/index.php");
@@ -94,7 +93,8 @@ function insertIntoDatabase($conn, $table, $attributes, $values)
 
 
         if (!$results) {
-            throw new Exception(pg_last_error($conn));
+            $_SESSION['error_message'] = "Dati inconsistenti con il resto del database"; 
+            // INSERIMENTO FK SBAGLIATO
         }
     } catch (Exception $e) {
 
@@ -110,25 +110,29 @@ function insertIntoDatabase($conn, $table, $attributes, $values)
 
 
 
-function updateIntoDatabase($conn, $table, $attributes)
+function updateIntoDatabase($conn, $table, $values)
 {
     $primaryKeys = getPrimaryKeys($conn, $table);
     $editCondition = "";
-    $conditions = "WHERE ";
+    $setValues = "";
+    foreach ($values as $key => $value) {
+        echo $key . '<br>';
+    }
 
-    foreach ($attributes as $key => $value) {
+    foreach ($values as $key => $value) {
         if (!$value) continue;
         if (in_array(strtolower($key), $primaryKeys)) {
-            $conditions .= "{$key} = '{$value}' AND ";
+            $editCondition .= "{$key} = '{$value}' AND ";
         } else {
-            $editCondition .= "{$key} = '{$value}', ";
+            $setValues .= "{$key} = '{$value}', ";
         }
     }
 
-    $conditions = rtrim($conditions, "AND ");
-    $editCondition = rtrim($editCondition, ", ");
+    $editCondition = rtrim($editCondition, " AND ");
+    $setValues = rtrim($setValues, ", ");
 
-    $query = "UPDATE {$table} SET {$editCondition} {$conditions}";
+    $query = "UPDATE {$table} SET {$setValues} WHERE {$editCondition}";
+    echo $query;
 
     try {
         $results = pg_query($conn, $query);
@@ -141,6 +145,7 @@ function updateIntoDatabase($conn, $table, $attributes)
         exit();
     }
 }
+
 
 
 
@@ -173,4 +178,28 @@ function parsePostValues()
 
 
     return $attributes;
+}
+
+
+function loginAsPatient($connection)
+{
+
+    global $DEFAULT_DIR;
+
+    $query = "SELECT * FROM UtenzaPaziente WHERE paziente = $1;";
+    try {
+        $result = pg_fetch_array(pg_query_params($connection, $query, array($_POST['Username'])));
+        if (password_verify($_POST['Password'], $result['hashedpassword'])) {
+            $_SESSION['logged_user'] = array('username' => $_POST['Username'], 'type' => 'patient');
+            header("Location:/basididati/Prog/php/view.php");
+        } else {
+            $_SESSION['error_message'] = "Credenziali non valide";
+            header("Location:/basididati/Prog/login.php");
+            exit();
+        }
+    } catch (Exception $e) {
+        $_SESSION['error_message'] = $e -> getMessage();
+        header("Location:/basididati/Prog/login.php");
+        exit();
+    }
 }
