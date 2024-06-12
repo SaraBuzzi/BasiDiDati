@@ -118,7 +118,7 @@ function isRequired($required)
 
 function isEditable($editable)
 {
-    return ($editable) ? "" : "disabled";
+    return ($editable) ? "" : "readonly";
 }
 
 function getValue($value)
@@ -157,10 +157,10 @@ function inputBoolean($name)
     return <<<IT
         <label class="form-check-label form-label" for="{$name}">{$name}:</label>
         <input name="true" type="checkbox" value="true" class='ms-1'>
-        <label class="form-check-label" for="true">True</label>
+        <label class="form-check-label" for="true"></label>
         
         <input name="false" type="checkbox" value="false" class='ms-3'>
-        <label class="form-check-label" for="false">False</label>
+        <label class="form-check-label" for="false"></label>
         <br>
         <br>
     IT;

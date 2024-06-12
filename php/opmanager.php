@@ -25,7 +25,7 @@ switch ($operation) {
         header("Location: /basididati/Prog/php/update.php?table={$table}");
         break;
     case 'insert':
-        $_SESSION['table'] = $table;
+        $_SESSION['table'] = strtolower($table);
         $attributes = array_filter($attributes, fn ($el) => $el);
         $names = implode(", ", array_keys($attributes));
         $values = implode(", ", array_map(fn ($el) => "'$el'", array_values($attributes)));
@@ -33,7 +33,7 @@ switch ($operation) {
         header("Location: /basididati/Prog/php/view.php?table={$table}");
         break;
     case 'update':
-        $_SESSION['table'] = $table;
+        $_SESSION['table'] = strtolower($table);
         updateIntoDatabase($conn, $table, $attributes);
         unset($_SESSION['edit_data']);
         header("Location: /basididati/Prog/php/view.php?table={$table}");
@@ -42,12 +42,20 @@ switch ($operation) {
         deleteFromDatabase($conn, $table);
         break;
     case 'login-patient':
+        $user = $_POST['username'];
+        $password = $_POST['password'];
+        loginPatient($conn, $user, $password);
         break;
     case 'login-worker':
+        $user = $_POST['username'];
+        $password = $_POST['password'];
+        loginWorker($conn, $user, $password);
         break;
     case 'logout':
         break;
     case 'select-table':
+        $_SESSION['table'] = strtolower($_POST['select']);
+        header("Location: /basididati/Prog/php/view.php");
         break;
 
 }
@@ -63,13 +71,19 @@ function deleteFromDatabase($conn, $table)
     }
     $condition = substr($condition, 0, -4);
     $query = "DELETE FROM " . $table . " " . $condition;
-    $result = pg_query($conn, $query);
-    if (!$result) {
-        echo '<br> Operazione non riuscita <br>';
+    
+    try {
+        $result = pg_query($conn, $query);
+        if (!$result) {
+            throw new Exception(pg_last_error($conn));
+        } 
+        header("Location: /basididati/Prog/php/view.php");
+    } catch (Exception $e) {
+        $_SESSION['error_message'] = $e->getMessage();
+        header("Location: /basididati/Prog/php/view.php");
         exit();
-    } else {
-        header("Location: /basididati/Prog/php/view.php?table={$table}");
     }
+    
 }
 
 
@@ -78,21 +92,17 @@ function insertIntoDatabase($conn, $table, $attributes, $values)
 {
 
     $query = "INSERT INTO {$table} ({$attributes}) VALUES ({$values});";
-    print_r($query);
-
+    
     try {
-
         $results = pg_query($conn, $query);
-
-
-        if (!$results) {
-            $_SESSION['error_message'] = "Dati inconsistenti con il resto del database"; 
-            // INSERIMENTO FK SBAGLIATO
+        
+        if (!$results || pg_result_error($results)) {
+            throw new Exception(pg_last_error($conn));
         }
+        
     } catch (Exception $e) {
 
         $_SESSION['inserted_data'] = $_POST;
-
         $_SESSION['error_message'] = $e->getMessage();
 
         header("Location:/basididati/Prog/php/insert.php");
@@ -139,6 +149,13 @@ function updateIntoDatabase($conn, $table, $values)
     }
 }
 
+function loginPatient($conn, $user, $password) {
+
+}
+
+function loginWorker($conn, $user, $password) {
+
+}
 
 
 

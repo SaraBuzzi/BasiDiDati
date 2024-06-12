@@ -57,3 +57,7 @@ form.styled-form {
     text-transform: uppercase;
 }
 
+input:read-only{
+    background-color: #f5f5f5;
+    cursor : not-allowed;
+}

@@ -10,9 +10,10 @@ $_SESSION['table'] = $table;
 }
 
 
+
 if (isset($_SESSION['error_message'])) {
     $error_message = $_SESSION['error_message'];
-    echo "<script type='text/javascript'>alert('$error_message');</script>";
+    echo "<script type='text/javascript'>alert(`$error_message`);</script>";
     unset($_SESSION['error_message']);
 }
 ?>
@@ -59,11 +60,29 @@ if (isset($_SESSION['error_message'])) {
     </header>
 
     <section class="container-xl mx-auto my-5">
-        <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 loggato-worker">
-            <div class='d-flex justify-content-between align-items-center'>
-                 <?php showWorkerSelect();
-                 showUserSelect();?>
-            </div>
+        <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 ">
+            
+                <form action="opmanager.php" method="POST" class="w-100">
+                <div class='d-flex justify-content-end align-items-center'>
+                 <?php if (true) {
+                    showWorkerSelect() ;
+                 } else {
+                 showUserSelect(); }?>
+                 <button class="btn btn-outline-secondary ms-3 h-100" type="submit" value="select-table"  name="operation" > Invia </button>
+                 </div>
+                </form>
+
+                <?php 
+                if (true) {
+                    echo "<form action='opmanager.php' method='POST' class='w-100'>
+                <div class='d-flex justify-content-center align-items-center mt-4'>
+                <button class='btn btn-outline-secondary ms-3 h-100' type='submit' value='select-table'  name='operation' > Invia </button>
+                <button class='btn btn-outline-secondary ms-3 h-100' type='submit' value='select-table'  name='operation' > Invia </button>
+                <button class='btn btn-outline-secondary ms-3 h-100' type='submit' value='select-table'  name='operation' > Invia </button>
+                </div>
+                </form>";
+                } 
+                ?>
         </div>  
         </section>
 
@@ -118,7 +137,7 @@ function showTable($conn)
 function showWorkerSelect()
 {
     $conn = connectToDatabase();
-    $string = "<select class='form-select' size='5'>";
+    $string = "<select class='form-select' name='select' size='5'>";
 
     $allTables = getTables($conn);
 
@@ -133,7 +152,7 @@ echo $string ."</select>";
 function showUserSelect()
 {
     $conn = connectToDatabase();
-    $string = "<select class='form-select' size='5'>";
+    $string = "<select class='form-select' name='select' size='5'>";
 
     $allTables = getTables($conn);
 

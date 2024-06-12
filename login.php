@@ -4,7 +4,7 @@ session_start();
 
 if (isset($_SESSION['error_message'])) {
     $error_message = $_SESSION['error_message'];
-    echo "<script type='text/javascript'>alert('$error_message');</script>";
+    echo "<script type='text/javascript'>alert(`$error_message`);</script>";
     unset($_SESSION['error_message']);
 }
 ?>

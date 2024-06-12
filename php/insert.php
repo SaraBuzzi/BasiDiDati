@@ -4,7 +4,7 @@ $table = $_SESSION['table'];
 
 if (isset($_SESSION['error_message'])) {
     $error_message = $_SESSION['error_message'];
-    echo "<script type='text/javascript'>alert('$error_message');</script>";
+    echo "<script type='text/javascript'>alert(`$error_message`);</script>";
     unset($_SESSION['error_message']); 
 }
 ?>
@@ -61,21 +61,14 @@ if (isset($_SESSION['error_message'])) {
             showForm(); ?>
 
             <button class='btn btn-secondary fs-5' type='submit' value='insert' name='operation'>Salva</button>
-            <button class="btn btn-outline-danger fs-6" onclick='clearForm()'>Cancella</button>
+            <button class="btn btn-outline-danger fs-6" type="reset">Cancella</button>
             </form>
         </div>
 
 
 
     </section>
-    <script>
-                    function clearForm() {
-                        var inputs = document.querySelectorAll('input[type=text]');
-                        inputs.forEach(function(input) {
-                            input.value = '';
-                        });
-                    }
-        </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 </body>
