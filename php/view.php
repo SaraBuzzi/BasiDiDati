@@ -2,9 +2,9 @@
 session_start();
 include 'utility.php';
 
-if (isset($_GET["table"])){
-  $table = strtolower($_GET['table']);
-$_SESSION['table'] = $table;  
+if (isset($_GET["table"])) {
+    $table = strtolower($_GET['table']);
+    $_SESSION['table'] = $table;
 } else {
     $table = strtolower($_SESSION['table']);
 }
@@ -61,44 +61,78 @@ if (isset($_SESSION['error_message'])) {
 
     <section class="container-xl mx-auto my-5">
         <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 ">
-            
-                <form action="opmanager.php" method="POST" class="w-100">
-                <div class='d-flex justify-content-end align-items-center'>
-                 <?php if (true) {
-                    showWorkerSelect() ;
-                 } else {
-                 showUserSelect(); }?>
-                 <button class="btn btn-outline-secondary ms-3 h-100" type="submit" value="select-table"  name="operation" > Invia </button>
-                 </div>
-                </form>
 
-                <?php 
-                if (true) {
-                    echo "<form action='opmanager.php' method='POST' class='w-100'>
-                <div class='d-flex justify-content-center align-items-center mt-4'>
-                <button class='btn btn-outline-secondary ms-3 h-100' type='submit' value='select-table'  name='operation' > Invia </button>
-                <button class='btn btn-outline-secondary ms-3 h-100' type='submit' value='select-table'  name='operation' > Invia </button>
-                <button class='btn btn-outline-secondary ms-3 h-100' type='submit' value='select-table'  name='operation' > Invia </button>
+            <form action="opmanager.php" method="POST" class="w-100">
+                <div class='d-flex justify-content-end align-items-center'>
+                    <?php if (true) {
+                        showWorkerSelect();
+                    } else {
+                        showUserSelect();
+                    } ?>
+                    <button class="btn btn-secondary btn-lg ms-3 h-100" type="submit" value="select-table" name="operation"> Visualizza </button>
                 </div>
-                </form>";
-                } 
-                ?>
-        </div>  
-        </section>
+            </form>
+
+            <?php
+            if (true) {
+                echo "
+                <div class='d-flex justify-content-between align-items-center text-center mt-4'>
+                <div>
+
+                <h3 class='fw-bold fs-6 text-uppercase'> Personale per reparto 
+                </h3>
+                <a href='../examples/personalexreparto.php'>
+                        <button class='btn btn-outline-dark' type='submit'>
+                            Vai alla pagina <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-arrow-up-right' viewBox='0 0 16 16'>
+  <path fill-rule='evenodd' d='M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z'/>
+</svg>  
+                        </button>
+                    </a>
+                    </div>
+                    <div class='align-items-center'>
+
+                <h3 class='fw-bold fs-6 text-uppercase'> Ricovero per paziente 
+                </h3>
+                <a href='../examples/personalexreparto.php'>
+                        <button class='btn btn-outline-dark' type='submit'>
+                            Vai alla pagina <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-arrow-up-right' viewBox='0 0 16 16'>
+  <path fill-rule='evenodd' d='M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z'/>
+</svg>  
+                        </button>
+                    </a>
+                    </div>
+                <div>
+
+                <h3 class='fw-bold fs-6 text-uppercase'> Sostituzioni primari
+                </h3>
+                <a href='../examples/personalexreparto.php'>
+                       <button class='btn btn-outline-dark' type='submit'>
+                            Vai alla pagina <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-arrow-up-right' viewBox='0 0 16 16'>
+  <path fill-rule='evenodd' d='M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z'/>
+</svg>  
+                        </button>
+                    </a>
+                    </div>
+                </div>
+               ";
+            }
+            ?>
+        </div>
+    </section>
 
 
     <section class="container-xl mx-auto my-5">
-        
-            <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 ">
-                <div class='d-flex justify-content-between mb-5 align-items-center'>
-                    <h3 class=' fw-bold text-capitalize'> <?php echo $table ?> </h3>
-                    <a class='btn btn-outline-secondary me-4 fs-5' href="insert.php"> Inserisci <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='currentColor' class='bi bi-arrow-right-short' viewBox='0 0 16 16'>
-                            <path fill-rule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8' />
-                        </svg></a>
-                </div>
-                <?php 
-                showTable(connectToDatabase()); ?>
+
+        <div class="bg-white mx-auto p-5 rounded-4 fit-content border border-secondary border-4 ">
+            <div class='d-flex justify-content-between mb-5 align-items-center'>
+                <h3 class=' fw-bold text-capitalize'> <?php echo $table ?> </h3>
+                <a class='btn btn-outline-secondary me-4 fs-5' href="insert.php"> Inserisci <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='currentColor' class='bi bi-arrow-right-short' viewBox='0 0 16 16'>
+                        <path fill-rule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8' />
+                    </svg></a>
             </div>
+            <?php
+            showTable(connectToDatabase()); ?>
+        </div>
 
 
 
@@ -141,12 +175,12 @@ function showWorkerSelect()
 
     $allTables = getTables($conn);
 
-    foreach($allTables as $table) {
+    foreach ($allTables as $table) {
         $table = strtoupper($table);
         $string .= "<option value='{$table}'> {$table}</option>";
     }
- 
-echo $string ."</select>";
+
+    echo $string . "</select>";
 }
 
 function showUserSelect()
@@ -156,12 +190,12 @@ function showUserSelect()
 
     $allTables = getTables($conn);
 
-    foreach($allTables as $table) {
+    foreach ($allTables as $table) {
         $table = strtoupper($table);
         $string .= "<option value='{$table}'> {$table}</option>";
     }
- 
-echo $string ."</select>";
+
+    echo $string . "</select>";
 }
 
 

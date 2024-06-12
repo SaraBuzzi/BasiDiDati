@@ -270,6 +270,17 @@ function getColumnsInfo($connection, $tableName)
     }
 }
 
+function getColumnsByResults($results)
+{
+    $columns = array();
+    $numFields = pg_num_fields($results);
+    for ($i = 0; $i < $numFields; $i++) {
+        $columns[] = pg_field_name($results, $i);
+    }
+    return $columns;
+}
+
+
 function getPrimaryKeys($connection, $tableName)
 {
     $table = strtolower($tableName);

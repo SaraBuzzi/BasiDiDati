@@ -234,20 +234,3 @@ FOR EACH ROW
 EXECUTE FUNCTION check_medico_prescrittore();
 
 
-CREATE OR REPLACE FUNCTION check_and_delete_richiesta()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Delete from RichiestaPrenotazione where there's a match on Paziente and Esame
-    DELETE FROM RichiestaPrenotazione
-    WHERE Paziente = NEW.Paziente
-      AND Esame = NEW.Esame;
-    
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE TRIGGER trigger_check_and_delete
-AFTER INSERT OR UPDATE ON Prenotazione
-FOR EACH ROW
-EXECUTE FUNCTION check_and_delete_richiesta();
